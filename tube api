@@ -1,0 +1,33 @@
+<?php
+// הגדרות API
+$api_key = "כאן_שמים_את_המפתח_שלך"; // המפתח שקיבלת מ-tubeapi.org
+
+// קבלת הפרמטר מימות המשיח (השם של הפרמטר שנשלח ב-URL)
+$video_id = isset($_GET['vid']) ? $_GET['vid'] : '';
+
+if (empty($video_id)) {
+    echo "read=t-שגיאה, לא התקבל מזהה שיר";
+    exit;
+}
+
+// פנייה ל-API של TubeAPI
+$api_url = "https://tubeapi.org/api/v1/download?key=$api_key&id=" . urlencode($video_id);
+
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $api_url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$response = curl_exec($ch);
+curl_close($ch);
+
+$data = json_decode($response, true);
+
+// חילוץ הקישור ובדיקת תקינות
+if (isset($data['link'])) {
+    $download_url = $data['link'];
+    // מחזיר לימות המשיח פקודת ניגון
+    echo "play_url=" . $download_url;
+} else {
+    // במקרה של שגיאה מה-API
+    echo "read=t-מצטערים, חלה שגיאה במשיכת השיר";
+}
+?>
