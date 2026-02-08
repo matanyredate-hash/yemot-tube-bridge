@@ -1,33 +1,35 @@
-<?php
-// הגדרות API
-$api_key = "כאן_שמים_את_המפתח_שלך"; // המפתח שקיבלת מ-tubeapi.org
+from flask import Flask, request
+import requests
 
-// קבלת הפרמטר מימות המשיח (השם של הפרמטר שנשלח ב-URL)
-$video_id = isset($_GET['vid']) ? $_GET['vid'] : '';
+app = Flask(__name__)
 
-if (empty($video_id)) {
-    echo "read=t-שגיאה, לא התקבל מזהה שיר";
-    exit;
-}
+@app.route('/')
+def bridge():
+    # ימות המשיח שולחת את מה שהמשתמש הקיש בפרמטר שנקרא val_name
+    user_input = request.args.get('val_name')
+    
+    if not user_input:
+        return "read=t-נא להקיש את קוד השיר"
 
-// פנייה ל-API של TubeAPI
-$api_url = "https://tubeapi.org/api/v1/download?key=$api_key&id=" . urlencode($video_id);
+    # כאן אתה מדביק את ה-URL שיש לך. 
+    # שים לב להוסיף את user_input בסוף איפה שהפרמטר אמור להיות
+    api_url = f"https://tubeapi.org/your-endpoint?parameter=TuBeApI-oRg ([a-zA-Z0-9\-\_]{11})"
+    
+    try:
+        response = requests.get(api_url)
+        # אם ה-API מחזיר JSON, נשלוף את הלינק
+        data = response.json()
+        
+        # שנה את 'link' לשם השדה הנכון שה-API שלך מחזיר (למשל 'url' או 'download')
+        song_link = data.get('link') 
+        
+        if song_link:
+            return f"play_url={song_link}"
+        else:
+            return "read=t-השיר לא נמצא"
+            
+    except Exception as e:
+        return "read=t-תקלה בחיבור לשרת"
 
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, $api_url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-
-$data = json_decode($response, true);
-
-// חילוץ הקישור ובדיקת תקינות
-if (isset($data['link'])) {
-    $download_url = $data['link'];
-    // מחזיר לימות המשיח פקודת ניגון
-    echo "play_url=" . $download_url;
-} else {
-    // במקרה של שגיאה מה-API
-    echo "read=t-מצטערים, חלה שגיאה במשיכת השיר";
-}
-?>
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=10000)
